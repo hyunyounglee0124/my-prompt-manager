@@ -7,3 +7,4 @@
 - 즐겨찾기 기능
 Last update: Sat Aug 22 01:26:25 KST 2026
 # Done
+## Project Finished
