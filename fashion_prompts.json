@@ -26,5 +26,19 @@
         "category": "코디 가이드",
         "views": 0,
         "favorite": false
+    },
+    {
+        "title": "청바지 관리",
+        "content": "찬물탁 권장",
+        "category": "SNS 포스팅",
+        "views": 0,
+        "favorite": false
+    },
+    {
+        "title": "0",
+        "content": "테스트",
+        "category": "코디 가이드",
+        "views": 0,
+        "favorite": false
     }
 ]
