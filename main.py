@@ -1,5 +1,6 @@
 import json
 import os
+import csv
 
 # 전역 변수 설정
 FILENAME = "fashion_prompts.json"
@@ -53,6 +54,11 @@ def show_menu():
     print("5. 상세 내용 보기 (조회수 증가)")
     print("6. 즐겨찾기 등록/해제")
     print("7. 즐겨찾기 목록 확인")
+    print("8. 마크다운으로 내보내기")
+    print("9. CSV로 내보내기")
+    print("10. 통계 보기")
+    print("11. 삭제하기")
+    print("0. 저장 및 종료")
     print("0. 저장 및 종료")
     print("="*45)
 
@@ -61,6 +67,22 @@ def add_prompt(prompts):
     print("\n--- 📝 새 프롬프트 추가 ---")
     title = input("제목: ")
     content = input("내용: ")
+def add_prompt(prompts):
+    title = input("제목: ")
+    content = input("내용: ")
+    url = input("참고 URL (없으면 엔터): ") # <--- 추가
+    
+    # ... 카테고리 선택 코드 생략 ...
+
+    new_item = {
+        "title": title,
+        "content": content,
+        "category": category,
+        "url": url if url else "없음", # <--- 추가
+        "views": 0,
+        "favorite": False
+    }
+    prompts.append(new_item)
     
     print("\n카테고리 선택:")
     for i, cat in enumerate(CATEGORIES, 1):
@@ -116,6 +138,78 @@ def toggle_favorite(prompts):
     except:
         print("❌ 잘못된 번호입니다.")
 
+def export_to_markdown(prompts):
+    """프롬프트를 카테고리별로 정리하여 Markdown 파일로 저장합니다."""
+    if not prompts:
+        print("❌ 내보낼 데이터가 없습니다.")
+        return
+
+    filename = "prompt_export.md"
+    try:
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write("# 🚀 나의 프롬프트 저장소\n\n")
+            
+            for category in CATEGORIES:
+                f.write(f"## 📂 {category}\n")
+                # 해당 카테고리에 속하는 프롬프트만 필터링
+                category_items = [p for p in prompts if p['category'] == category]
+                
+                if not category_items:
+                    f.write("*(등록된 프롬프트가 없습니다)*\n\n")
+                    continue
+                    
+                for p in category_items:
+                    fav = "⭐" if p.get('favorite') else ""
+                    f.write(f"### {p['title']} {fav}\n")
+                    f.write(f"- **조회수:** {p.get('views', 0)}\n")
+                    f.write(f"- **내용:**\n  ```text\n  {p['content']}\n  ```\n\n")
+        
+        print(f"✅ '{filename}' 파일로 내보내기가 완료되었습니다!")
+    except Exception as e:
+        print(f"❌ 파일 저장 중 오류 발생: {e}")
+def export_to_csv(prompts):
+    """프롬프트를 CSV 파일로 저장합니다."""
+    if not prompts:
+        print("❌ 내보낼 데이터가 없습니다.")
+        return
+    filename = "prompts_data.csv"
+    try:
+        with open(filename, "w", newline="", encoding="utf-8-sig") as f:
+            fieldnames = ["title", "category", "views", "favorite", "content", "url"]
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            for p in prompts:
+                writer.writerow({
+                    "title": p['title'],
+                    "category": p['category'],
+                    "views": p.get('views', 0),
+                    "favorite": "O" if p.get('favorite') else "X",
+                    "content": p['content'],
+                    "url": p.get('url', '없음')
+                })
+        print(f"✅ '{filename}' 저장 완료!")
+    except Exception as e:
+        print(f"❌ 오류 발생: {e}")
+
+def show_statistics(prompts):
+    """데이터 통계를 보여줍니다."""
+    if not prompts: return
+    total = len(prompts)
+    total_views = sum(p.get('views', 0) for p in prompts)
+    most_viewed = max(prompts, key=lambda x: x.get('views', 0))
+    print(f"\n📊 총 개수: {total}개 | 총 조회수: {total_views}회")
+    print(f"🔥 인기 1위: {most_viewed['title']} ({most_viewed['views']}회)")
+
+def delete_prompt(prompts):
+    """프롬프트를 삭제합니다."""
+    list_prompts(prompts)
+    try:
+        idx = int(input("\n🗑️ 삭제할 번호 (취소 -1): "))
+        if idx != -1:
+            removed = prompts.pop(idx)
+            print(f"✅ '{removed['title']}' 삭제되었습니다.")
+    except:
+        print("❌ 잘못된 번호입니다.")
 def main():
     prompts = load_data()
     
@@ -142,6 +236,16 @@ def main():
         elif choice == "7":
             fav_list = [p for p in prompts if p.get("favorite")]
             list_prompts(fav_list)
+        elif choice == "8":
+            export_to_markdown(prompts)
+        elif choice == "9": 
+            export_to_csv(prompts)
+        elif choice == "10": 
+            show_statistics(prompts)
+        elif choice == "11": 
+            delete_prompt(prompts)
+        elif choice == "0":
+            # ... 종료 코드 ...
         elif choice == "0":
             save_data(prompts)
             print("💾 데이터가 저장되었습니다. 프로그램을 종료합니다.")
