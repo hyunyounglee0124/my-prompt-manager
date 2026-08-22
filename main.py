@@ -1,6 +1,7 @@
 import json
 import os
 import csv
+import webbrowser 
 
 # 전역 변수 설정
 FILENAME = "fashion_prompts.json"
@@ -115,18 +116,29 @@ def view_detail(prompts):
     """상세 내용을 확인하고 조회수를 올립니다."""
     list_prompts(prompts)
     try:
-        idx = int(input("\n상세히 볼 번호 선택: "))
+        idx = int(input("\n상세히 볼 번호를 입력하세요: "))
         p = prompts[idx]
         p['views'] += 1  # 조회수 증가
+
         print("\n" + "-"*40)
         print(f"제목: {p['title']}")
         print(f"분류: {p['category']}")
         print(f"내용: {p['content']}")
+        
+        # --- 링크 출력 및 자동 열기 기능 추가 ---
+        url = p.get('url', '없음') 
+        print(f"링크: {url}")
         print(f"조회수: {p['views']}")
         print("-"*40)
-    except:
-        print("❌ 잘못된 번호입니다.")
 
+        # 링크가 http로 시작하면 자동으로 브라우저 실행
+        if url.startswith("http"):
+            print(f"\n🔗 연결된 링크(동영상/이미지)를 브라우저에서 엽니다...")
+            webbrowser.open(url)
+        # ---------------------------------------
+
+    except (ValueError, IndexError):
+        print("❌ 잘못된 번호입니다.")
 def toggle_favorite(prompts):
     """즐겨찾기를 설정하거나 해제합니다."""
     list_prompts(prompts)
@@ -244,8 +256,7 @@ def main():
             show_statistics(prompts)
         elif choice == "11": 
             delete_prompt(prompts)
-        elif choice == "0":
-            # ... 종료 코드 ...
+            save_prompts(prompts)
         elif choice == "0":
             save_data(prompts)
             print("💾 데이터가 저장되었습니다. 프로그램을 종료합니다.")
